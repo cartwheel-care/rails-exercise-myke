@@ -8,6 +8,8 @@ Rails.application.routes.draw do
     end
   end
 
+  resources :contacts
+
   # Defines the root path route ("/")
   root "home#index"
 end

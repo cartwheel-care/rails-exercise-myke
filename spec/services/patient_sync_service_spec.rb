@@ -11,6 +11,33 @@ RSpec.describe PatientSyncService, type: :service do
 
     before { freeze_time }
 
+    shared_examples "raises exceptions on errors" do
+      describe "error handling" do
+        before do
+          allow(SicklieApi).to receive(:create_patient).and_return api_response
+        end
+
+        context "when Sicklie response is not a hash" do
+          let(:api_response) { "Internal server error" }
+
+          it "throws an error containing the message" do
+            expect { call }.to raise_error PatientSyncService::SyncError, 
+              "Error syncing with Sicklie: Internal server error"
+          end
+        end
+
+        context "when Sicklie response has status code other than 'SUCCESS'" do
+          let(:api_response) do
+            {status_code: "FIELD_ERROR", field: "last_name", message: "Sorry, we don't like this last name right now" }
+          end
+
+          it "throws an error with the status message" do
+            expect { call }.to raise_error PatientSyncService::SyncError, "Error syncing with Sicklie: #{api_response}"
+          end
+        end
+      end
+    end
+
     context "when the patient does NOT have a sicklie_id" do
       let(:patient_sicklie_id) { nil }
       let(:api_response) do
@@ -34,6 +61,8 @@ RSpec.describe PatientSyncService, type: :service do
           sicklie_updated_at: Time.current          
         )
       end
+
+      it_behaves_like "raises exceptions on errors"
     end
 
     context "when the patient has a sicklie_id" do
@@ -59,6 +88,8 @@ RSpec.describe PatientSyncService, type: :service do
           sicklie_updated_at: Time.current          
         )
       end
+
+      it_behaves_like "raises exceptions on errors"
     end    
   end
 end

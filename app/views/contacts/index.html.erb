@@ -1,0 +1,11 @@
+<h2 class="text-lg sm:text-2xl font-extrabold">Contact Directory</h2>
+
+<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 my-4 justify-items-center">
+  <% @contacts.each do |contact| %>
+    <% if contact.patient %>
+      <%= render PatientCardComponent.new(contact.patient) %>
+    <% else %>
+      <%= render ContactCardComponent.new(contact) %>
+    <% end %>
+  <% end %>
+</div>
